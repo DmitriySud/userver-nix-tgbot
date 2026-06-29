@@ -49,13 +49,8 @@ let
       )
 
       if [ "$DRY_RUN" = "1" ]; then
-        # Redacted, copy-pasteable command. Token replaced with a placeholder
-        # so the printed line is safe to share; the URL secret_path is kept
-        # since you need it to actually run.
-        redacted_api="https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook"
         printed=(curl)
         for a in "''${curl_args[@]}"; do
-          if [ "$a" = "$API_URL" ]; then a="$redacted_api"; fi
           printed+=("$(printf '%q' "$a")")
         done
         echo "# dry-run: would execute (token redacted)" >&2
