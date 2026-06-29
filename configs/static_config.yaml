@@ -1,0 +1,65 @@
+components_manager:
+    coro_pool:
+        initial_size: 100
+        max_size: 200
+
+    task_processors:
+        main-task-processor:
+            worker_threads: 2
+        fs-task-processor:
+            worker_threads: 2
+
+    default_task_processor: main-task-processor
+
+    components:
+        # ---- core infra ----
+        logging:
+            fs-task-processor: fs-task-processor
+            loggers:
+                default:
+                    file_path: '@stderr'
+                    level: info
+                    overflow_behavior: discard
+
+        tracer:
+            service-name: tgbot
+
+        dynamic-config:
+            defaults:
+                HTTP_CLIENT_CONNECT_THROTTLE: {}
+
+        # ---- secrets ----
+        # Reads the JSON deployed by sops at /run/secrets/tgbot-secdist
+        # with fields: telegram_bot_token, random_secret_token, secret_path
+        secdist: {}
+        default-secdist-provider:
+            config: /run/secrets/tgbot-secdist
+
+        # ---- outgoing HTTP client (for calling api.telegram.org) ----
+        http-client:
+            fs-task-processor: fs-task-processor
+
+        dns-client:
+            fs-task-processor: fs-task-processor
+
+        # ---- HTTPS server: TLS webhook listener ----
+        server:
+            listener:
+                port: 8443
+                task_processor: main-task-processor
+                tls:
+                    cert: /run/secrets/tgbot-cert-pub
+                    private-key: /run/secrets/tgbot-cert-key
+                handler-defaults: {}
+
+            # local-only monitoring socket, plain HTTP
+            listener-monitor:
+                port: 1188
+                address: 127.0.0.1
+                task_processor: main-task-processor
+
+        # ---- handlers ----
+        tgbot-webhook-handler:
+            path: /webhook/{secret_path}
+            method: POST
+            task_processor: main-task-processor
