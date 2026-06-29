@@ -26,7 +26,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, userver-src, userver-nix }:
+  outputs = { self, nixpkgs, flake-utils, userver-src, userver-nix, tgbot-cpp-src }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
@@ -40,6 +40,8 @@
           version = "1.8";
           src = tgbot-cpp-src;
         };
+
+        setWebhook = import ./set-webhook.nix { inherit pkgs; };
 
         # Use the clang stdenv as requested.
         clangStdenv = pkgs.clangStdenv;
@@ -74,6 +76,7 @@
         packages = {
           default = hello-tgbot;
           hello-tgbot = hello-tgbot;
+          set-webhook = setWebhook;
         };
 
         apps.default = {
@@ -87,6 +90,11 @@
             exec ${hello-tgbot}/bin/hello_tgbot \
               -c ${hello-tgbot}/share/hello_tgbot/static_config.yaml
           ''}";
+        };
+
+        apps.set-webhook = {
+          type = "app";
+          program = "${setWebhook}/bin/tgbot-set-webhook";
         };
 
         devShells.default = clangStdenv.mkDerivation {
