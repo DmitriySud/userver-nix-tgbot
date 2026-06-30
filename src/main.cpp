@@ -1,3 +1,4 @@
+#include <userver/clients/http/component_core.hpp>
 #include <userver/components/minimal_server_component_list.hpp>
 #include <userver/utils/daemon_run.hpp>
 
@@ -15,6 +16,7 @@ int main(int argc, char* argv[]) {
             .Append<userver::components::DefaultSecdistProvider>()
             .Append<userver::clients::dns::Component>()
             .Append<userver::components::HttpClient>()
+            .Append<userver::components::HttpClientCore>()
             .Append<tgbot::WebhookHandler>();
 
     return userver::utils::DaemonMain(argc, argv, component_list);

@@ -21,9 +21,6 @@ components_manager:
                     level: info
                     overflow_behavior: discard
 
-        tracer:
-            service-name: tgbot
-
         dynamic-config:
             defaults:
                 HTTP_CLIENT_CONNECT_THROTTLE: {}
@@ -37,9 +34,9 @@ components_manager:
 
         # ---- outgoing HTTP client (for calling api.telegram.org) ----
         http-client:
-            fs-task-processor: fs-task-processor
+          core-component: http-client-core
 
-        dns-client:
+        http-client-core:
             fs-task-processor: fs-task-processor
 
         # ---- HTTPS server: TLS webhook listener ----

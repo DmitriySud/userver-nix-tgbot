@@ -37,8 +37,7 @@ std::string WebhookHandler::HandleRequestThrow(
     try {
         // tgbot-cpp used purely as a parser: JSON string -> typed Update.
         TgBot::TgTypeParser parser;
-        update = parser.parseJson<TgBot::Update>(
-            parser.parseJson(body));
+        update = parser.parseJsonAndGetUpdate(parser.parseJson(body));
     } catch (const std::exception& ex) {
         // Malformed payload: ack with 200 anyway so Telegram doesn't retry a
         // body we'll never parse. Log for visibility.

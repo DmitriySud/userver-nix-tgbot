@@ -11,7 +11,7 @@ find_package(userver REQUIRED COMPONENTS core)
 
 # tgbot-cpp: provided by the flake. Used only as a JSON/type parser.
 # Try the modern CMake config target first; fall back to find_library.
-find_package(tgbot-cpp REQUIRED)
+find_package(TgBot REQUIRED)
 
 # ---- shared object library: sources reused by service + (future) tests ----
 add_library(${PROJECT_NAME}_objs OBJECT
@@ -23,19 +23,13 @@ add_library(${PROJECT_NAME}_objs OBJECT
 target_include_directories(${PROJECT_NAME}_objs PUBLIC src)
 target_link_libraries(${PROJECT_NAME}_objs PUBLIC userver::core)
 
-# Link tgbot-cpp by whichever form the flake package exposes.
-if(TARGET TgBot)
-    target_link_libraries(${PROJECT_NAME}_objs PUBLIC TgBot)
-elseif(TARGET tgbot-cpp::TgBot)
-    target_link_libraries(${PROJECT_NAME}_objs PUBLIC tgbot-cpp::TgBot)
-else()
-    # Fallback: locate the lib + headers manually (e.g. from $buildInputs in Nix).
-    find_library(TGBOT_LIB NAMES TgBot tgbot REQUIRED)
-    find_path(TGBOT_INCLUDE_DIR NAMES tgbot/Bot.h REQUIRED)
-    target_include_directories(${PROJECT_NAME}_objs PUBLIC ${TGBOT_INCLUDE_DIR})
-    target_link_libraries(${PROJECT_NAME}_objs PUBLIC ${TGBOT_LIB})
-endif()
+target_link_libraries(${PROJECT_NAME}_objs PUBLIC TgBot)
 
 # ---- the service executable ----
 add_executable(${PROJECT_NAME} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_objs)
+
+include(GNUInstallDirs)
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES configs/static_config.yaml
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/hello_tgbot)

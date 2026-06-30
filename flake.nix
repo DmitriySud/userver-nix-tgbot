@@ -75,6 +75,7 @@
       in {
         packages = {
           default = hello-tgbot;
+          tgbot-cpp = tgbot-cpp;
           hello-tgbot = hello-tgbot;
           set-webhook = setWebhook;
         };
@@ -83,11 +84,7 @@
           type = "app";
           # The bot reads the token from $TELEGRAM_BOT_TOKEN at runtime.
           program = "${pkgs.writeShellScript "run-hello-tgbot" ''
-            if [ -z "''${TELEGRAM_BOT_TOKEN:-}" ]; then
-              echo "Set TELEGRAM_BOT_TOKEN before running." >&2
-              exit 1
-            fi
-            exec ${hello-tgbot}/bin/hello_tgbot \
+            exec ${hello-tgbot}/bin/tgbot \
               -c ${hello-tgbot}/share/hello_tgbot/static_config.yaml
           ''}";
         };
@@ -104,7 +101,7 @@
             clang-tools   # clangd / clang-format
             gdb
           ];
-          buildInputs = [ tgbot-cpp ];
+          buildInputs = [ tgbot-cpp userver ];
           shellHook = ''
             echo "hello-tgbot dev shell (clang). tgbot-cpp available."
             echo "Configure: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug"

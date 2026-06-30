@@ -30,7 +30,7 @@ pkgs.stdenv.mkDerivation {
   # transitively via find_package(tgbot-cpp) — tgbot-cpp's headers and its
   # cmake targets reference Boost/OpenSSL/curl.
   propagatedBuildInputs = with pkgs; [
-    boost
+    boost183
     openssl
     zlib
   ];
