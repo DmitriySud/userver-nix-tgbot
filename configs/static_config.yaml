@@ -36,6 +36,8 @@ components_manager:
         http-client:
           core-component: http-client-core
 
+        http-client-middleware-pipeline: {}
+
         http-client-core:
             fs-task-processor: fs-task-processor
 

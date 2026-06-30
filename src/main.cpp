@@ -4,6 +4,7 @@
 
 #include <userver/clients/dns/component.hpp>
 #include <userver/clients/http/component.hpp>
+#include <userver/clients/http/middlewares/pipeline_component.hpp>
 #include <userver/storages/secdist/component.hpp>
 #include <userver/storages/secdist/provider_component.hpp>
 
@@ -17,6 +18,7 @@ int main(int argc, char* argv[]) {
             .Append<userver::clients::dns::Component>()
             .Append<userver::components::HttpClient>()
             .Append<userver::components::HttpClientCore>()
+            .Append<userver::clients::http::MiddlewarePipelineComponent>()
             .Append<tgbot::WebhookHandler>();
 
     return userver::utils::DaemonMain(argc, argv, component_list);

@@ -31,5 +31,3 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_objs)
 
 include(GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(FILES configs/static_config.yaml
-        DESTINATION ${CMAKE_INSTALL_DATADIR}/hello_tgbot)

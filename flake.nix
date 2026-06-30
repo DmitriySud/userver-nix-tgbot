@@ -43,7 +43,13 @@
 
         setWebhook = import ./set-webhook.nix { inherit pkgs; };
 
-        # Use the clang stdenv as requested.
+        # Config-only derivation: pure file copy, no compiler, rebuilds instantly.
+        # Editing configs/static_config.yaml invalidates ONLY this path.
+        hello-tgbot-config = pkgs.runCommand "hello-tgbot-config" { } ''
+          mkdir -p $out/share/hello_tgbot
+          cp ${./configs/static_config.yaml} $out/share/hello_tgbot/static_config.yaml
+        '';
+
         clangStdenv = pkgs.clangStdenv;
 
         hello-tgbot = clangStdenv.mkDerivation {
@@ -77,6 +83,7 @@
           default = hello-tgbot;
           tgbot-cpp = tgbot-cpp;
           hello-tgbot = hello-tgbot;
+          hello-tgbot-config = hello-tgbot-config;
           set-webhook = setWebhook;
         };
 
@@ -85,7 +92,7 @@
           # The bot reads the token from $TELEGRAM_BOT_TOKEN at runtime.
           program = "${pkgs.writeShellScript "run-hello-tgbot" ''
             exec ${hello-tgbot}/bin/tgbot \
-              -c ${hello-tgbot}/share/hello_tgbot/static_config.yaml
+              -c ${hello-tgbot-config}/share/hello_tgbot/static_config.yaml
           ''}";
         };
 
