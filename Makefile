@@ -1,5 +1,5 @@
 # ---- config: edit these ----
-VPS      ?= dsudakov@lastochka
+VPS      ?= dsudakov@martin
 CODE_ATTR    ?= hello-tgbot
 CONFIG_ATTR  ?= hello-tgbot-config
 # ----------------------------

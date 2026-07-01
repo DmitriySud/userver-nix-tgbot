@@ -45,19 +45,24 @@ std::string WebhookHandler::HandleRequestThrow(
         return {};
     }
 
-    if (update && update->message) {
-        const auto& msg = update->message;
-        // TODO: feed into inactivity tracker:
-        //   repository_.RecordActivity(msg->chat->id, msg->from->id, now);
-        LOG_INFO() << "message chat_id=" << msg->chat->id
-                   << " user_id=" << (msg->from ? msg->from->id : 0);
-    } else if (update && update->callbackQuery) {
-        // TODO: callback-query access control + handling.
-        LOG_INFO() << "callback_query";
+        // Only respond to text messages; everything else gets an empty 200 ack.
+    if (!update || !update->message || update->message->text.empty()) {
+        return {};
     }
 
-    // Telegram only needs a 200 OK with an empty (or method-call) body.
-    return {};
+    const auto chat_id = update->message->chat->id;
+    const auto& text = update->message->text;
+
+    // Build the webhook-response method call:
+    //   {"method":"sendMessage","chat_id":<id>,"text":"Hello <text>"}
+    userver::formats::json::ValueBuilder reply;
+    reply["method"] = "sendMessage";
+    reply["chat_id"] = chat_id;
+    reply["text"] = "Hello " + text;
+
+    auto& response = request.GetHttpResponse();
+    response.SetContentType(userver::http::content_type::kApplicationJson);
+    return userver::formats::json::ToString(reply.ExtractValue());
 }
 
 }  // namespace tgbot
