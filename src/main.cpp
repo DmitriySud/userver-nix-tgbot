@@ -1,5 +1,6 @@
 #include <userver/clients/http/component_core.hpp>
 #include <userver/components/minimal_server_component_list.hpp>
+#include <userver/storages/sqlite/component.hpp>
 #include <userver/utils/daemon_run.hpp>
 
 #include <userver/clients/dns/component.hpp>
@@ -8,11 +9,15 @@
 #include <userver/storages/secdist/component.hpp>
 #include <userver/storages/secdist/provider_component.hpp>
 
+#include "bot_component.hpp"
 #include "webhook_handler.hpp"
 
 int main(int argc, char* argv[]) {
     const auto component_list =
         userver::components::MinimalServerComponentList()
+            .Append<BotComponent>()
+            .Append<ActivityRepository>()
+            .Append<userver::components::SQLite>("sqlite-db")
             .Append<userver::components::Secdist>()
             .Append<userver::components::DefaultSecdistProvider>()
             .Append<userver::clients::dns::Component>()

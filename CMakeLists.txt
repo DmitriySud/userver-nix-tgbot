@@ -7,7 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # userver: installed via the userver-nix flake, so config-mode find_package.
 # Only the core component is needed (HTTP server, secdist, http client live there).
-find_package(userver REQUIRED COMPONENTS core)
+find_package(userver REQUIRED COMPONENTS core sqlite)
 
 # tgbot-cpp: provided by the flake. Used only as a JSON/type parser.
 # Try the modern CMake config target first; fall back to find_library.
@@ -19,9 +19,11 @@ add_library(${PROJECT_NAME}_objs OBJECT
     src/secdist.cpp
     src/webhook_handler.hpp
     src/webhook_handler.cpp
+    src/bot_component.cpp
 )
 target_include_directories(${PROJECT_NAME}_objs PUBLIC src)
 target_link_libraries(${PROJECT_NAME}_objs PUBLIC userver::core)
+target_link_libraries(${PROJECT_NAME}_objs PUBLIC userver::sqlite)
 
 target_link_libraries(${PROJECT_NAME}_objs PUBLIC TgBot)
 

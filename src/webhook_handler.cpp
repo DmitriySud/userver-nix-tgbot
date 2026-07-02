@@ -4,6 +4,7 @@
 #include <tgbot/types/Update.h>
 
 #include <userver/components/component_context.hpp>
+#include <userver/storages/secdist/component.hpp>
 #include <userver/logging/log.hpp>
 #include <userver/server/http/http_status.hpp>
 #include <userver/storages/secdist/secdist.hpp>
@@ -13,12 +14,21 @@
 
 namespace tgbot {
 
+namespace {
+
+std::string GetPath(const userver::components::Secdist &secdist) {
+  return secdist.Get().Get<tgbot::BotSecdist>().secret_path;
+}
+
+} // namespace
+
 WebhookHandler::WebhookHandler(
     const userver::components::ComponentConfig &config,
     const userver::components::ComponentContext &context)
     : HttpHandlerBase(config, context),
       bot_(context.FindComponent<BotComponent>()),
-      expected_secret_path_(context.FindComponent<BotSecdist>().secret_path) {}
+      expected_secret_path_(
+          GetPath(context.FindComponent<userver::components::Secdist>())) {}
 
 std::string WebhookHandler::HandleRequestThrow(
     const userver::server::http::HttpRequest& request,
@@ -33,14 +43,15 @@ std::string WebhookHandler::HandleRequestThrow(
 
     TgBot::Update::Ptr update;
     try {
-        // tgbot-cpp used purely as a parser: JSON string -> typed Update.
-        TgBot::TgTypeParser parser;
-        update = parser.parseJsonAndGetUpdate(parser.parseJson(request.RequestBody()));
-    } catch (const std::exception& ex) {
-        // Malformed payload: ack with 200 anyway so Telegram doesn't retry a
-        // body we'll never parse. Log for visibility.
-        LOG_WARNING() << "Failed to parse Telegram Update: " << ex.what();
-        return {};
+      // tgbot-cpp used purely as a parser: JSON string -> typed Update.
+      TgBot::TgTypeParser parser;
+      update =
+          parser.parseJsonAndGetUpdate(parser.parseJson(request.RequestBody()));
+    } catch (const std::exception &ex) {
+      // Malformed payload: ack with 200 anyway so Telegram doesn't retry a
+      // body we'll never parse. Log for visibility.
+      LOG_WARNING() << "Failed to parse Telegram Update: " << ex.what();
+      return {};
     }
 
     if (!update) {

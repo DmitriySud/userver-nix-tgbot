@@ -4,6 +4,14 @@
 
 #include <userver/clients/http/component.hpp>
 #include <userver/logging/log.hpp>
+#include <userver/storages/secdist/component.hpp>
+namespace {
+
+std::string GetToken(const userver::components::Secdist &secdist) {
+  return secdist.Get().Get<tgbot::BotSecdist>().telegram_bot_token;
+}
+
+}
 
 BotComponent::BotComponent(const userver::components::ComponentConfig &config,
                            const userver::components::ComponentContext &context)
@@ -11,7 +19,8 @@ BotComponent::BotComponent(const userver::components::ComponentConfig &config,
       repo_(context.FindComponent<ActivityRepository>()),
       tg_http_(context.FindComponent<userver::components::HttpClient>()
                    .GetHttpClient()),
-      bot_(context.FindComponent<tgbot::BotSecdist>().telegram_bot_token) {
+      bot_(GetToken(context.FindComponent<userver::components::Secdist>()),
+           tg_http_) {
 
   bot_.getEvents().onCommand("last_activity", [this](TgBot::Message::Ptr m) {
     auto ts = repo_.GetLastActivity(m->chat->id, m->from->id);

@@ -64,6 +64,7 @@ components_manager:
             task_processor: main-task-processor
 
         bot: {}
+        activity-repository: {}
 
         sqlite-db:
             db-path: $sqlite-db-path

@@ -12,7 +12,7 @@ namespace tgbot {
 class WebhookHandler final
     : public userver::server::handlers::HttpHandlerBase {
 public:
-    static constexpr std::string_view kName = "webhook-handler";
+    static constexpr std::string_view kName = "tgbot-webhook-handler";
 
     WebhookHandler(const userver::components::ComponentConfig& config,
                    const userver::components::ComponentContext& context);
