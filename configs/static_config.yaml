@@ -67,10 +67,8 @@ components_manager:
         activity-repository: {}
 
         sqlite-db:
-            db-path: $sqlite-db-path
-            db-path#env: SQLITE_DB_PATH
-            db-path#fallback: /var/lib/hello-tgbot/bot.db
-            busy-timeout: 5000
-            journal-mode: wal
-            # per-thread connection pooling is handled by the component
-            task_processor: fs-task-processor
+            db-path: /var/lib/iam-alive-bot/activity.db
+            busy_timeout: 5000
+            journal_mode: wal
+            fs-task-processor: fs-task-processor
+            initial_read_only_pool_size: 2
