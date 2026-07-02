@@ -58,8 +58,9 @@ in {
         StateDirectoryMode = "0700";
         WorkingDirectory = "/var/lib/iam-alive-bot";
 
-        Restart = "on-failure";
-        RestartSec = 5;
+        Restart = "no";
+        # Restart = "on-failure";
+        # RestartSec = 5;
       };
     };
   };

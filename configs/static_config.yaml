@@ -72,3 +72,5 @@ components_manager:
             journal_mode: wal
             fs-task-processor: fs-task-processor
             initial_read_only_pool_size: 2
+
+        testsuite-support: {}

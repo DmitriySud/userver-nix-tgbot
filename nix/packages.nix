@@ -4,6 +4,7 @@
 
 let
   clangStdenv = pkgs.clangStdenv;
+  fs = pkgs.lib.fileset;
 
   userver = userver-nix.lib.${pkgs.system}.mkUserver {
     features = {
@@ -18,6 +19,16 @@ let
     src = tgbot-cpp-src;
   };
 
+  root = ../.;
+  botSources = fs.toSource {
+    inherit root;
+    fileset = fs.unions [
+      (root + "/src")
+      (root + "/CMakeLists.txt")
+      # add whatever else the build reads: cmake/ modules, proto/, etc.
+    ];
+  };
+
   # Config-only derivation: pure file copy, no compiler, rebuilds instantly.
   # Editing configs/static_config.yaml invalidates ONLY this path.
   iam-alive-bot-config = pkgs.runCommand "iam-alive-bot-config" { } ''
@@ -28,7 +39,7 @@ let
   iam-alive-bot = clangStdenv.mkDerivation {
     pname = "iam-alive-bot";
     version = "0.1.0";
-    src = ../.;
+    src = botSources;
 
     nativeBuildInputs = with pkgs; [ cmake ninja pkg-config python3 ];
 
