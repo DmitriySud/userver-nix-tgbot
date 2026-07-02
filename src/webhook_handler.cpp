@@ -1,24 +1,24 @@
 #include "webhook_handler.hpp"
 
-#include <tgbot/types/Update.h>
 #include <tgbot/TgTypeParser.h>
+#include <tgbot/types/Update.h>
 
+#include <userver/components/component_context.hpp>
 #include <userver/logging/log.hpp>
 #include <userver/server/http/http_status.hpp>
 #include <userver/storages/secdist/secdist.hpp>
 
 #include "secdist.hpp"
+#include "bot_component.hpp"
 
 namespace tgbot {
 
 WebhookHandler::WebhookHandler(
-    const userver::components::ComponentConfig& config,
-    const userver::components::ComponentContext& context)
-    : HttpHandlerBase(config, context) {
-    const auto& secdist =
-        context.FindComponent<userver::components::Secdist>().Get();
-    expected_secret_path_ = secdist.Get<BotSecdist>().secret_path;
-}
+    const userver::components::ComponentConfig &config,
+    const userver::components::ComponentContext &context)
+    : HttpHandlerBase(config, context),
+      bot_(context.FindComponent<BotComponent>()),
+      expected_secret_path_(context.FindComponent<BotSecdist>().secret_path) {}
 
 std::string WebhookHandler::HandleRequestThrow(
     const userver::server::http::HttpRequest& request,
@@ -31,13 +31,11 @@ std::string WebhookHandler::HandleRequestThrow(
         return {};
     }
 
-    const std::string& body = request.RequestBody();
-
     TgBot::Update::Ptr update;
     try {
         // tgbot-cpp used purely as a parser: JSON string -> typed Update.
         TgBot::TgTypeParser parser;
-        update = parser.parseJsonAndGetUpdate(parser.parseJson(body));
+        update = parser.parseJsonAndGetUpdate(parser.parseJson(request.RequestBody()));
     } catch (const std::exception& ex) {
         // Malformed payload: ack with 200 anyway so Telegram doesn't retry a
         // body we'll never parse. Log for visibility.
@@ -45,24 +43,14 @@ std::string WebhookHandler::HandleRequestThrow(
         return {};
     }
 
-        // Only respond to text messages; everything else gets an empty 200 ack.
-    if (!update || !update->message || update->message->text.empty()) {
+    if (!update) {
         return {};
     }
 
-    const auto chat_id = update->message->chat->id;
-    const auto& text = update->message->text;
+    bot_.HandleUpdateAsync(std::move(update));
 
-    // Build the webhook-response method call:
-    //   {"method":"sendMessage","chat_id":<id>,"text":"Hello <text>"}
-    userver::formats::json::ValueBuilder reply;
-    reply["method"] = "sendMessage";
-    reply["chat_id"] = chat_id;
-    reply["text"] = "Hello " + text;
-
-    auto& response = request.GetHttpResponse();
-    response.SetContentType(userver::http::content_type::kApplicationJson);
-    return userver::formats::json::ToString(reply.ExtractValue());
+    // Always an empty 200 ack; replies are sent as outbound API calls.
+    return {};
 }
 
-}  // namespace tgbot
+} // namespace tgbot

@@ -2,15 +2,17 @@
 
 #include <string>
 
-#include <userver/components/component_context.hpp>
 #include <userver/server/handlers/http_handler_base.hpp>
-#include <userver/storages/secdist/component.hpp>
+
+class BotComponent;
 
 namespace tgbot {
 
-class WebhookHandler final : public userver::server::handlers::HttpHandlerBase {
+
+class WebhookHandler final
+    : public userver::server::handlers::HttpHandlerBase {
 public:
-    static constexpr std::string_view kName = "tgbot-webhook-handler";
+    static constexpr std::string_view kName = "webhook-handler";
 
     WebhookHandler(const userver::components::ComponentConfig& config,
                    const userver::components::ComponentContext& context);
@@ -20,7 +22,7 @@ public:
         userver::server::request::RequestContext& context) const override;
 
 private:
-    // Cached at construction; secret_path is static for the process lifetime.
+    BotComponent& bot_;
     std::string expected_secret_path_;
 };
 

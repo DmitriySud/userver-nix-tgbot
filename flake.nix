@@ -32,7 +32,10 @@
         pkgs = nixpkgs.legacyPackages.${system};
 
         userver = userver-nix.lib.${system}.mkUserver {
-          features = { core = true; };
+          features = { 
+            core = true; 
+            sqlite = true; 
+          };
         };
 
         tgbot-cpp = import ./tgbot-cpp.nix {
